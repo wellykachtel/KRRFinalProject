@@ -1,0 +1,164 @@
+(in-microtheory MazeWorldMt) 
+(genlMt MazeWorldMt HTNPlanner)
+
+;;; axiom vocab
+
+(isa hasAgent UnaryPredicate)
+(arity hasAgent 1)
+(arg1Isa hasAgent Square)
+(comment hasAgent "(hasAgent ?x) means the agent is at square ?x.")
+
+(isa keyCount UnaryPredicate)
+(arity keyCount 1)
+(arg1Isa keyCount NonNegativeInteger)
+(comment keyCount "(keyCount ?x) means the agent has ?x keys.")
+
+(isa coordinate TernaryPredicate)
+(arity coordinate 3)
+(arg1Isa coordinate Square)
+(arg2Isa coordinate NonNegativeInteger)
+(arg3Isa coordinate NonNegativeInteger)
+(comment coordinate "(coordinate ?x ?y ?z) means the Square ?x is located at (?y,?z).")
+
+(isa isWalk UnaryPredicate)
+(arity isWalk 1)
+(arg1Isa isWalk Square)
+(comment isWalk "(isWalk ?x) means Square ?x is traversible by the agent.")
+
+(isa hasKey UnaryPredicate)
+(arity hasKey 1)
+(arg1Isa hasKey Square)
+(comment hasKey "(hasKey ?x) means Square ?x is contains a key for the door.")
+
+(isa isExit UnaryPredicate)
+(arity isExit 1)
+(arg1Isa isExit Square)
+(comment isExit "(isExit ?x) means Square ?x is the exit square.")
+
+;;; primitives
+
+(isa execMove SimpleActionPredicate)
+(arity execMove 2)
+(arg1Isa execMove Square)
+(arg1Isa execMove Square)
+(comment execMove "(execMove ?sq1 ?sq2) takes the agent from ?sq1 to ?sq2")
+
+(isa doAssert SimpleActionPredicate)
+(isa doAssert BookKeepingTask)
+(arity doAssert 1)
+(comment doAssert "(doAssert ?fact) simply adds ?fact to the current planning context.")
+
+(isa removeKey SimpleActionPredicate)
+(arity removeKey 1)
+(arg1Isa removeKey Square)
+(comment removeKey "(removeKey ?x) removes the key from square ?x.")
+
+(isa removeKeyCount SimpleActionPredicate)
+(arity removeKeyCount 0)
+(comment removeKeyCount "(removeKeyCount ?x) deletes the current count of keys")
+
+(isa addKeyCount SimpleActionPredicate)
+(arity addKeyCount 0)
+(comment addKeyCount "(addKeyCount ?x) add the current count of keys")
+
+;;; Horn Clauses
+(<== (connected ?blockA ?blockB)
+	(isWalk ?blockA)
+	(isWalk ?blockB)
+	(coordinate ?blockA ?xA ?yA)
+	(coordinate ?blockB ?xB ?yA)
+	(evaluate ?x (DifferenceFn ?xA ?xB))
+	(evaluate ?y (AbsoluteValueFn ?x))
+	(equals ?y 1))
+
+(<== (connected ?blockA ?blockB)
+	(isWalk ?blockA)
+	(isWalk ?blockB)
+	(coordinate ?blockA ?xA ?yA)
+	(coordinate ?blockB ?xA ?yB)
+	(evaluate ?x (DifferenceFn ?yA ?yB))
+	(evaluate ?y (AbsoluteValueFn ?x))
+	(equals ?y 1))
+
+;;; Preference rules:
+(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+	(evaluate ?x (CountFn ?seq1 ?actList)) 
+	(evaluate ?y (CountFn ?seq2 ?actList))
+	(greaterThan ?y ?x))
+
+;;; preconditions for primitives
+
+(preconditionFor-Props
+	(and 	(hasAgent ?x)
+		(connected ?x ?y))
+	(execMove ?x ?y))
+
+;;; effects of primitives
+
+(effectOfAction-Props
+	(execMove ?x ?y)
+	(and 	(hasAgent ?y)
+        	(not (hasAgent ?x))))
+
+(effectOfAction-Props
+	(removeKey ?x)
+	(not	(hasKey ?x)))
+
+(effectOfAction-Props
+	(removeKeyCount ?x)
+	(not 	(keyCount ?x)))
+
+(effectOfAction-Props
+	(addKeyCount ?x)
+	(keyCount ?x))
+
+(effectOfAction-Props
+   (doAssert ?fact)
+   ?fact)
+
+;;; complex actions
+
+(isa incrementKeys ComplexActionPredicate)
+(arity incrementKeys 0)
+(comment incrementKeys "(incrementKeys) records the agent as having 1 more key than before.")
+
+;;; complex action real definition
+
+;grab a key from the square you're in
+(preconditionForMethod
+	(and	(hasAgent ?x)
+		(hasKey ?x)
+		(keyCount ?y)
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x))))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(removeKey ?x)
+				(removeKeyCount ?y)
+				(evaluate ?z (PlusFn ?y 1))
+				(addKeyCount ?z)
+				(mazeAct ?newList)))))
+
+;move to an adjacent square
+(preconditionForMethod
+	(and	(hasAgent ?x)
+		(connected ?x ?y)
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x))))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(execMove ?x ?y)
+				(mazeAct ?newList)))))
+
+;If all goals are satisfied, at end of maze, do nothing
+(preconditionForMethod
+	(and 	(hasAgent ?x)
+		(isExit ?x)
+		(keyCount ?y)
+		(equals ?y 1))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+		   (TheList (doAssert ?actList)))))
