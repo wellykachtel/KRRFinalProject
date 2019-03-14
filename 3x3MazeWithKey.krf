@@ -1,0 +1,19 @@
+(coordinate block0 0 0)
+(coordinate block1 0 1)
+(coordinate block2 0 2)
+(coordinate block3 1 0)
+(coordinate block4 1 1)
+(coordinate block5 1 2)
+(coordinate block6 2 0)
+(coordinate block7 2 1)
+(coordinate block8 2 2)
+
+(isWalk block4)
+(isWalk block3)
+
+(hasAgent block3)
+(isExit block5)
+(hasKey block4)
+
+
+
