@@ -1,5 +1,5 @@
 (<== (isDeadEnd ?block)
-    (equal (TheClosedRetrievalSetOf (connected ?block ?x)) 1))
+    (equals (TheClosedRetrievalSetOf (connected ?block ?x)) 1))
 
 (<== (isIntersection ?block)
 	(connected ?block ?blockA)
