@@ -20,6 +20,3 @@
     (different ?blockA ?blockD)
     (different ?blockB ?blockD)
     (different ?blockC ?blockD))
-
-(<== (numTouches ?blockA ?x)
-    (evaluate ?x (count ?blockA ?list)))
