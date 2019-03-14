@@ -24,3 +24,4 @@
 (isExit block11)
 (hasAgent block4)
 (hasKey block9)
+(totalKeyNumber 1)

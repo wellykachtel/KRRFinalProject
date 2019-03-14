@@ -20,3 +20,9 @@
     (different ?blockA ?blockD)
     (different ?blockB ?blockD)
     (different ?blockC ?blockD))
+
+(<== (solutionReached)
+    (totalKeyNumber ?x)
+    (equals ?x (keyCount ?y))
+    (isExit ?exitBlock)
+    (hasAgent ?exitBlock))
