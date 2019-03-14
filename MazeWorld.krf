@@ -1,12 +1,13 @@
 (in-microtheory MazeWorldMt) 
 (genlMt MazeWorldMt HTNPlanner)
+(genlMt Session-ReasonerPlanMt MazeWorldMt)
 
 ;;; axiom vocab
 
 (isa hasAgent UnaryPredicate)
 (arity hasAgent 1)
-(arg1Isa hasAgent Square)
-(comment hasAgent "(hasAgent ?x) means the agent is at square ?x.")
+(arg1Isa hasAgent mazeBlock)
+(comment hasAgent "(hasAgent ?x) means the agent is at mazeBlock ?x.")
 
 (isa keyCount UnaryPredicate)
 (arity keyCount 1)
@@ -15,51 +16,56 @@
 
 (isa coordinate TernaryPredicate)
 (arity coordinate 3)
-(arg1Isa coordinate Square)
+(arg1Isa coordinate mazeBlock)
 (arg2Isa coordinate NonNegativeInteger)
 (arg3Isa coordinate NonNegativeInteger)
-(comment coordinate "(coordinate ?x ?y ?z) means the Square ?x is located at (?y,?z).")
+(comment coordinate "(coordinate ?x ?y ?z) means the mazeBlock ?x is located at (?y,?z).")
 
 (isa isWalk UnaryPredicate)
 (arity isWalk 1)
-(arg1Isa isWalk Square)
-(comment isWalk "(isWalk ?x) means Square ?x is traversible by the agent.")
+(arg1Isa isWalk mazeBlock)
+(comment isWalk "(isWalk ?x) means mazeBlock ?x is traversible by the agent.")
 
 (isa hasKey UnaryPredicate)
 (arity hasKey 1)
-(arg1Isa hasKey Square)
-(comment hasKey "(hasKey ?x) means Square ?x is contains a key for the door.")
+(arg1Isa hasKey mazeBlock)
+(comment hasKey "(hasKey ?x) means mazeBlock ?x is contains a key for the door.")
 
 (isa isExit UnaryPredicate)
 (arity isExit 1)
-(arg1Isa isExit Square)
-(comment isExit "(isExit ?x) means Square ?x is the exit square.")
+(arg1Isa isExit mazeBlock)
+(comment isExit "(isExit ?x) means mazeBlock ?x is the exit mazeBlock.")
+
+(isa finalPath UnaryPredicate)
+(arity finalPath 1)
+(arg1Isa finalPath List)
+(comment finalPath "(finalPath ?x) ?x is an ordered list of mazeBlocks leading through the maze to the exit.")
 
 ;;; primitives
 
-(isa execMove SimpleActionPredicate)
-(arity execMove 2)
-(arg1Isa execMove Square)
-(arg1Isa execMove Square)
-(comment execMove "(execMove ?sq1 ?sq2) takes the agent from ?sq1 to ?sq2")
+;(isa execMove SimpleActionPredicate)
+;(arity execMove 2)
+;(arg1Isa execMove mazeBlock)
+;(arg1Isa execMove mazeBlock)
+;(comment execMove "(execMove ?sq1 ?sq2) takes the agent from ?sq1 to ?sq2")
 
-(isa doAssert SimpleActionPredicate)
-(isa doAssert BookKeepingTask)
-(arity doAssert 1)
-(comment doAssert "(doAssert ?fact) simply adds ?fact to the current planning context.")
+;(isa doFinalize SimpleActionPredicate)
+;(arity doFinalize 1)
+;(arg1Isa doFinalize List)
+;(comment doFinalize "(doFinalize ?l) finalizes l as the path.")
 
-(isa removeKey SimpleActionPredicate)
-(arity removeKey 1)
-(arg1Isa removeKey Square)
-(comment removeKey "(removeKey ?x) removes the key from square ?x.")
+;(isa removeKey SimpleActionPredicate)
+;(arity removeKey 1)
+;(arg1Isa removeKey mazeBlock)
+;(comment removeKey "(removeKey ?x) removes the key from mazeBlock ?x.")
 
-(isa removeKeyCount SimpleActionPredicate)
-(arity removeKeyCount 0)
-(comment removeKeyCount "(removeKeyCount ?x) deletes the current count of keys")
+;(isa removeKeyCount SimpleActionPredicate)
+;(arity removeKeyCount 0)
+;(comment removeKeyCount "(removeKeyCount ?x) deletes the current count of keys")
 
-(isa addKeyCount SimpleActionPredicate)
-(arity addKeyCount 0)
-(comment addKeyCount "(addKeyCount ?x) add the current count of keys")
+;(isa addKeyCount SimpleActionPredicate)
+;(arity addKeyCount 0)
+;(comment addKeyCount "(addKeyCount ?x) add the current count of keys")
 
 ;;; Horn Clauses
 (<== (connected ?blockA ?blockB)
@@ -80,53 +86,103 @@
 	(evaluate ?y (AbsoluteValueFn ?x))
 	(equals ?y 1))
 
+(<== (isDeadEnd ?block)
+    (equals (TheClosedRetrievalSetOf (connected ?block ?x)) 1))
+
+(<== (solutionReached)
+    (totalKeyNumber ?x)
+    (equals ?x (keyCount ?y))
+    (isExit ?exitBlock)
+    (hasAgent ?exitBlock))
+
 ;;; Preference rules:
-(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
-	(evaluate ?x (CountFn ?seq1 ?actList)) 
-	(evaluate ?y (CountFn ?seq2 ?actList))
-	(greaterThan ?y ?x))
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(evaluate ?x (CountFn ?seq1 ?actList)) 
+;	(evaluate ?y (CountFn ?seq2 ?actList))
+;	(greaterThan ?y ?x))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(subexpressionMatching (execMove ?a ?b) ?seq1 ?action)
+;	(subexpressionMatching (execMove ?c ?d) ?seq2 ?action2)
+;	(evaluate ?x (CountFn ?b ?actList)) 
+;	(evaluate ?y (CountFn ?d ?actList))
+;	(greaterThan ?y ?x))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(subexpressionMatching (removeKey ?x) ?seq1 ?action))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(subexpressionMatching (doAssert ?x) ?seq1 ?action))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(containsPattern (connected ?a ?b) ?seq1)
+;	(containsPattern (connected ?c ?d) ?seq2)
+;	(evaluate ?x (CountFn ?b ?actList)) 
+;	(evaluate ?y (CountFn ?d ?actList))
+;	(greaterThan ?y ?x))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(containsPattern (hasKey ?x) ?seq1))
+
+;(<== (preferInContext (mazeAct ?actList) ?seq1 ?seq2)
+;	(containsPattern (isExit ?x) ?seq1))
 
 ;;; preconditions for primitives
 
-(preconditionFor-Props
-	(and 	(hasAgent ?x)
-		(connected ?x ?y))
-	(execMove ?x ?y))
+;(preconditionFor-Props
+;	(and 	(hasAgent ?x)
+;			(connected ?x ?y))
+;	(execMove ?x ?y))
 
 ;;; effects of primitives
 
-(effectOfAction-Props
-	(execMove ?x ?y)
-	(and 	(hasAgent ?y)
-        	(not (hasAgent ?x))))
+;(effectOfAction-Props
+;	(execMove ?x ?y)
+;	(and 	(hasAgent ?y)
+;       	(not (hasAgent ?x))))
 
-(effectOfAction-Props
-	(removeKey ?x)
-	(not	(hasKey ?x)))
+;(effectOfAction-Props
+;	(doFinalize ?l)
+;	(finalPath ?l))
 
-(effectOfAction-Props
-	(removeKeyCount ?x)
-	(not 	(keyCount ?x)))
+;(effectOfAction-Props
+;	(removeKey ?x)
+;	(not	(hasKey ?x)))
 
-(effectOfAction-Props
-	(addKeyCount ?x)
-	(keyCount ?x))
+;(effectOfAction-Props
+;	(removeKeyCount ?x)
+;	(not 	(keyCount ?x)))
 
-(effectOfAction-Props
-   (doAssert ?fact)
-   ?fact)
+;(effectOfAction-Props
+;	(addKeyCount ?x)
+;	(keyCount ?x))
+
+;(effectOfAction-Props
+;	(doAssert ?fact)
+;	 ?fact)
 
 ;;; complex actions
 
-(isa incrementKeys ComplexActionPredicate)
-(arity incrementKeys 0)
-(comment incrementKeys "(incrementKeys) records the agent as having 1 more key than before.")
+;(isa incrementKeys ComplexActionPredicate)
+;(arity incrementKeys 0)
+;(comment incrementKeys "(incrementKeys) records the agent as having 1 more key than before.")
+
+(isa mazeAct ComplexActionPredicate)
+(arity mazeAct 1)
+(arg1Isa mazeAct List)
+(comment mazeAct "(mazeAct ?l) recursively solves the maze in the current context and eventually saves ?l, the list of actions it took to solve the maze.")
+
+(isa beginRecursion ComplexActionPredicate)
+(arity beginRecursion 0)
+(comment beginRecursion "(beginRecursion) calls (mazeAct (TheList)).")
+
 
 ;;; complex action real definition
 
-;grab a key from the square you're in
+;grab a key from the mazeBlock you're in
 (preconditionForMethod
-	(and	(hasAgent ?x)
+	(and	(uninferredSentence (solutionReached))
+		(hasAgent ?x)
 		(hasKey ?x)
 		(keyCount ?y)
 		(evaluate ?newList (JoinListsFn ?actList (TheList ?x))))
@@ -134,31 +190,59 @@
 		(mazeAct ?actList)
 		(actionSequence
 			(TheList
-				(removeKey ?x)
-				(removeKeyCount ?y)
 				(evaluate ?z (PlusFn ?y 1))
-				(addKeyCount ?z)
+				(untell (keyCount ?y))
+				(tell (keyCount ?z))
+				(untell (hasKey ?x))
 				(mazeAct ?newList)))))
 
-;move to an adjacent square
+;move to an adjacent mazeBlock, and don't backtrack
 (preconditionForMethod
-	(and	(hasAgent ?x)
+	(and	(uninferredSentence (hasKey ?x))
+		(uninferredSentence (solutionReached))
+		(hasAgent ?x)
 		(connected ?x ?y)
+		(evaluate ?last (LastInListFn ?actList))
+		(different ?y ?last)
 		(evaluate ?newList (JoinListsFn ?actList (TheList ?x))))
 	(methodForAction
 		(mazeAct ?actList)
 		(actionSequence
 			(TheList
-				(execMove ?x ?y)
+				(tell (hasAgent ?y))
+				(untell (hasAgent ?x))
+				(mazeAct ?newList)))))
+
+;move to an adjacent mazeBlock and backtrack because you're in a dead end
+(preconditionForMethod
+	(and	(uninferredSentence (hasKey ?x))
+		(uninferredSentence (solutionReached))
+		(hasAgent ?x)
+		(connected ?x ?y)
+		(isDeadEnd ?x)
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x))))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(tell (hasAgent ?y))
+				(untell (hasAgent ?x))
 				(mazeAct ?newList)))))
 
 ;If all goals are satisfied, at end of maze, do nothing
 (preconditionForMethod
-	(and 	(hasAgent ?x)
-		(isExit ?x)
-		(keyCount ?y)
-		(equals ?y 1))
+	(solutionReached)
 	(methodForAction
 		(mazeAct ?actList)
 		(actionSequence
-		   (TheList (doAssert ?actList)))))
+			(TheList
+				(ist-Information aMAZEingMt (tell (finalPath ?actList)))))))
+
+;to start everything, we need something with no preconditions
+(preconditionForMethod
+	(true)
+	(methodForAction
+		(beginRecursion)
+		(actionSequence
+			(TheList
+				(mazeAct (TheList))))))
