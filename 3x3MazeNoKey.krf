@@ -1,3 +1,7 @@
+(in-microtheory aMAZEingMt)
+(genlMt aMAZEingMt MazeWorldMt)
+(genlMt Session-ReasonerPlanMt aMAZEingMt)
+
 (coordinate block0 0 0)
 (coordinate block1 0 1)
 (coordinate block2 0 2)
@@ -8,11 +12,20 @@
 (coordinate block7 2 1)
 (coordinate block8 2 2)
 
+(isa block0 mazeBlock)
+(isa block1 mazeBlock)
+(isa block2 mazeBlock)
+(isa block3 mazeBlock)
+(isa block4 mazeBlock)
+(isa block5 mazeBlock)
+(isa block6 mazeBlock)
+(isa block7 mazeBlock)
+(isa block8 mazeBlock)
+
 (isWalk block4)
 (isWalk block3)
 
 (hasAgent block3)
 (isExit block5)
-
-
+(totalKeyNumber 0)
 
