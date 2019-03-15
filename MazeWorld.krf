@@ -91,7 +91,8 @@
 
 (<== (solutionReached)
     (totalKeyNumber ?x)
-    (equals ?x (keyCount ?y))
+    (keyCount ?y)
+    (equals ?x ?y)
     (isExit ?exitBlock)
     (hasAgent ?exitBlock))
 
