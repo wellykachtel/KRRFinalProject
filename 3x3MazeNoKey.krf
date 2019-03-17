@@ -24,6 +24,7 @@
 
 (isWalk block4)
 (isWalk block3)
+(isWalk block5)
 
 (hasAgent block3)
 (isExit block5)

@@ -63,6 +63,7 @@
 (isWalk block16)
 (isWalk block17)
 (isWalk block18)
+(isWalk block9)
 
 (isExit block9)
 (hasAgent block10)

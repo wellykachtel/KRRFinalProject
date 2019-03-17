@@ -41,6 +41,7 @@
 (isWalk block6)
 (isWalk block9)
 (isWalk block10)
+(isWalk block11)
 
 (isExit block11)
 (hasAgent block4)

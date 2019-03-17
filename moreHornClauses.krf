@@ -1,5 +1,8 @@
 (<== (isDeadEnd ?block)
-    (equals (TheClosedRetrievalSetOf (connected ?block ?x)) 1))
+    (evaluate ?set (TheClosedRetrievalSetOf ?block (connected ?block ?x)))
+    (evaluate ?list (SetToListFn ?set))
+    (evaluate ?len (LengthOfListFn ?list))
+    (equals ?len 1))
 
 (<== (isIntersection ?block)
 	(connected ?block ?blockA)
