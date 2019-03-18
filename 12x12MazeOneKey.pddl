@@ -1,0 +1,322 @@
+(define (problem Maze3)
+  (:domain MazeWorld)
+  (:objects
+
+        block0 - block
+        block1 - block
+        block2 - block
+        block3 - block
+        block4 - block
+        block5 - block
+        block6 - block
+        block7 - block
+        block8 - block
+        block9 - block
+        block10 - block
+        block11 - block
+        block12 - block
+        block13 - block
+        block14 - block
+        block15 - block
+        block16 - block
+        block17 - block
+        block18 - block
+        block19 - block
+        block20 - block
+        block21 - block
+        block22 - block
+        block23 - block
+        block24 - block
+        block25 - block
+        block26 - block
+        block27 - block
+        block28 - block
+        block29 - block
+        block30 - block
+        block31 - block
+        block32 - block
+        block33 - block
+        block34 - block
+        block35 - block
+        block36 - block
+        block37 - block
+        block38 - block
+        block39 - block
+        block40 - block
+        block41 - block
+        block42 - block
+        block43 - block
+        block44 - block
+        block45 - block
+        block46 - block
+        block47 - block
+        block48 - block
+        block49 - block
+        block50 - block
+        block51 - block
+        block52 - block
+        block53 - block
+        block54 - block
+        block55 - block
+        block56 - block
+        block57 - block
+        block58 - block
+        block59 - block
+        block60 - block
+        block61 - block
+        block62 - block
+        block63 - block
+        block64 - block
+        block65 - block
+        block66 - block
+        block67 - block
+        block68 - block
+        block69 - block
+        block70 - block
+        block71 - block
+        block72 - block
+        block73 - block
+        block74 - block
+        block75 - block
+        block76 - block
+        block77 - block
+        block78 - block
+        block79 - block
+        block80 - block
+        block81 - block
+        block82 - block
+        block83 - block
+        block84 - block
+        block85 - block
+        block86 - block
+        block87 - block
+        block88 - block
+        block89 - block
+        block90 - block
+        block91 - block
+        block92 - block
+        block93 - block
+        block94 - block
+        block95 - block
+        block96 - block
+        block97 - block
+        block98 - block
+        block99 - block
+        block100 - block
+        block101 - block
+        block102 - block
+        block103 - block
+        block104 - block
+        block105 - block
+        block106 - block
+        block107 - block
+        block108 - block
+        block109 - block
+        block110 - block
+        block111 - block
+        block112 - block
+        block113 - block
+        block114 - block
+        block115 - block
+        block116 - block
+        block117 - block
+        block118 - block
+        block119 - block
+        block120 - block
+        block121 - block
+        block122 - block
+        block123 - block
+        block124 - block
+        block125 - block
+        block126 - block
+        block127 - block
+        block128 - block
+        block129 - block
+        block130 - block
+        block131 - block
+        block132 - block
+        block133 - block
+        block134 - block
+        block135 - block
+        block136 - block
+        block137 - block
+        block138 - block
+        block139 - block
+        block140 - block
+        block141 - block
+        block142 - block
+        block143 - block
+)
+
+(:init
+
+(connected block103 block115)
+(connected block103 block91)
+(connected block109 block121)
+(connected block109 block97)
+(connected block111 block112)
+(connected block111 block123)
+(connected block111 block99)
+(connected block112 block111)
+(connected block112 block113)
+(connected block112 block124)
+(connected block113 block112)
+(connected block113 block114)
+(connected block113 block125)
+(connected block114 block113)
+(connected block114 block115)
+(connected block114 block126)
+(connected block115 block103)
+(connected block115 block114)
+(connected block115 block127)
+(connected block12 block13)
+(connected block121 block109)
+(connected block121 block122)
+(connected block122 block121)
+(connected block122 block123)
+(connected block123 block111)
+(connected block123 block122)
+(connected block123 block124)
+(connected block124 block112)
+(connected block124 block123)
+(connected block124 block125)
+(connected block125 block113)
+(connected block125 block124)
+(connected block125 block126)
+(connected block126 block114)
+(connected block126 block125)
+(connected block126 block127)
+(connected block127 block115)
+(connected block127 block126)
+(connected block127 block128)
+(connected block128 block127)
+(connected block128 block129)
+(connected block129 block128)
+(connected block129 block130)
+(connected block13 block12)
+(connected block13 block14)
+(connected block130 block129)
+(connected block14 block13)
+(connected block14 block15)
+(connected block14 block26)
+(connected block15 block14)
+(connected block15 block16)
+(connected block16 block15)
+(connected block16 block17)
+(connected block17 block16)
+(connected block17 block18)
+(connected block18 block17)
+(connected block18 block19)
+(connected block19 block18)
+(connected block19 block20)
+(connected block20 block19)
+(connected block20 block21)
+(connected block21 block20)
+(connected block21 block22)
+(connected block22 block21)
+(connected block22 block34)
+(connected block26 block14)
+(connected block26 block38)
+(connected block34 block22)
+(connected block34 block46)
+(connected block37 block38)
+(connected block38 block26)
+(connected block38 block37)
+(connected block38 block50)
+(connected block41 block42)
+(connected block41 block53)
+(connected block42 block41)
+(connected block42 block43)
+(connected block43 block42)
+(connected block43 block44)
+(connected block44 block43)
+(connected block44 block45)
+(connected block45 block44)
+(connected block45 block46)
+(connected block45 block57)
+(connected block46 block34)
+(connected block46 block45)
+(connected block46 block58)
+(connected block50 block38)
+(connected block50 block51)
+(connected block50 block62)
+(connected block51 block50)
+(connected block51 block52)
+(connected block51 block63)
+(connected block52 block51)
+(connected block52 block53)
+(connected block53 block41)
+(connected block53 block52)
+(connected block57 block45)
+(connected block57 block58)
+(connected block57 block69)
+(connected block58 block46)
+(connected block58 block57)
+(connected block61 block62)
+(connected block62 block50)
+(connected block62 block61)
+(connected block62 block63)
+(connected block63 block51)
+(connected block63 block62)
+(connected block63 block75)
+(connected block69 block57)
+(connected block69 block81)
+(connected block75 block63)
+(connected block75 block76)
+(connected block76 block75)
+(connected block76 block77)
+(connected block77 block76)
+(connected block77 block78)
+(connected block77 block89)
+(connected block78 block77)
+(connected block78 block79)
+(connected block78 block90)
+(connected block79 block78)
+(connected block79 block80)
+(connected block79 block91)
+(connected block80 block79)
+(connected block80 block81)
+(connected block81 block69)
+(connected block81 block80)
+(connected block81 block82)
+(connected block82 block81)
+(connected block82 block83)
+(connected block82 block94)
+(connected block83 block82)
+(connected block89 block77)
+(connected block89 block90)
+(connected block90 block78)
+(connected block90 block89)
+(connected block90 block91)
+(connected block91 block103)
+(connected block91 block79)
+(connected block91 block90)
+(connected block94 block82)
+(connected block97 block109)
+(connected block97 block98)
+(connected block98 block97)
+(connected block98 block99)
+(connected block99 block111)
+(connected block99 block98)
+
+
+
+
+        (hasKey block109)
+        (hasKey block130)
+        (hasKey block94)
+        (isExit block83)
+        (hasAgent block12)
+        (keyCount zero)
+        (complete false)
+        (totalKeys three)
+
+        (nextNum zero one)
+        (nextNum one two)
+        (nextNum two three)
+        (nextNum three four)
+        (nextNum four five)
+)
+
+    (:goal (and (complete true)))
+)
