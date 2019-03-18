@@ -1,0 +1,250 @@
+(in-microtheory MazeWorldMt) 
+(genlMt MazeWorldMt HTNPlanner)
+(genlMt Session-ReasonerPlanMt MazeWorldMt)
+
+
+
+;;; axiom vocab
+
+(isa isStart UnaryPredicate)
+(arity isStart 1)
+(arg1Isa isStart mazeBlock)
+(comment isStart "(isStart ?x) means that the agent starts the maze from ?x.")
+
+(isa hasAgent UnaryPredicate)
+(arity hasAgent 1)
+(arg1Isa hasAgent mazeBlock)
+(comment hasAgent "(hasAgent ?x) means the agent is at mazeBlock ?x.")
+
+(isa keyCount UnaryPredicate)
+(arity keyCount 1)
+(arg1Isa keyCount NonNegativeInteger)
+(comment keyCount "(keyCount ?x) means the agent has ?x keys.")
+
+(isa coordinate TernaryPredicate)
+(arity coordinate 3)
+(arg1Isa coordinate mazeBlock)
+(arg2Isa coordinate NonNegativeInteger)
+(arg3Isa coordinate NonNegativeInteger)
+(comment coordinate "(coordinate ?x ?y ?z) means the mazeBlock ?x is located at (?y,?z).")
+
+(isa isWalk UnaryPredicate)
+(arity isWalk 1)
+(arg1Isa isWalk mazeBlock)
+(comment isWalk "(isWalk ?x) means mazeBlock ?x is traversible by the agent.")
+
+(isa hasKey UnaryPredicate)
+(arity hasKey 1)
+(arg1Isa hasKey mazeBlock)
+(comment hasKey "(hasKey ?x) means mazeBlock ?x is contains a key for the door.")
+
+(isa isExit UnaryPredicate)
+(arity isExit 1)
+(arg1Isa isExit mazeBlock)
+(comment isExit "(isExit ?x) means mazeBlock ?x is the exit mazeBlock.")
+
+(isa finalPath UnaryPredicate)
+(arity finalPath 1)
+(arg1Isa finalPath List)
+(comment finalPath "(finalPath ?x) ?x is an ordered list of mazeBlocks leading through the maze to the exit.")
+
+
+
+
+;;; Horn Clauses
+(<== (connected ?blockA ?blockB)
+	(isWalk ?blockA)
+	(isWalk ?blockB)
+	(coordinate ?blockA ?xA ?yA)
+	(coordinate ?blockB ?xB ?yA)
+	(evaluate ?x (DifferenceFn ?xA ?xB))
+	(evaluate ?y (AbsoluteValueFn ?x))
+	(equals ?y 1))
+
+(<== (connected ?blockA ?blockB)
+	(isWalk ?blockA)
+	(isWalk ?blockB)
+	(coordinate ?blockA ?xA ?yA)
+	(coordinate ?blockB ?xA ?yB)
+	(evaluate ?x (DifferenceFn ?yA ?yB))
+	(evaluate ?y (AbsoluteValueFn ?x))
+	(equals ?y 1))
+
+(<== (isDeadEnd ?block)
+    	(evaluate ?set (TheClosedRetrievalSetOf ?block (connected ?block ?x)))
+	(evaluate ?len (CardinalityFn ?set))
+	(equals ?len 1))
+
+;this gives us our end condition, and it should be updated as we traverse the maze. If these are all simultaneously true, we immediately stop recursion
+(<== (solutionReached)
+    (totalKeyNumber ?x)
+    (keyCount ?y)
+    (equals ?x ?y)
+    (isExit ?exitBlock)
+    (hasAgent ?exitBlock))
+
+;;; complex actions
+
+(isa mazeAct ComplexActionPredicate)
+(arity mazeAct 1)
+(arg1Isa mazeAct List)
+(comment mazeAct "(mazeAct ?l) recursively solves the maze in the current context and eventually saves ?l, the list of actions it took to solve the maze.")
+
+(isa beginRecursion ComplexActionPredicate)
+(arity beginRecursion 0)
+(comment beginRecursion "(beginRecursion) calls (initializeWM).")
+
+(isa recurseAgain ComplexActionPredicate)
+(arity recurseAgain 0)
+(comment recurseAgain "(recurseAgain) calls (mazeAct (TheList)).")
+
+(isa initializeWM ComplexActionPredicate)
+(arity initializeWM 0)
+(comment initializeWM "(initializeWM) calls (mazeAct (TheList)) after it reads microtheory information into working memory.")
+
+
+;;; complex action real definition
+
+;grab a key from the mazeBlock you're in
+(preconditionForMethod
+	(and	
+	(uninferredSentence (ist-Information aMAZEingMt (solutionReached)))
+		(wmOnly (ist-Information aMAZEingMt (hasAgent ?x)))
+		(ist-Information aMAZEingMt (hasKey ?x))
+		(ist-Information aMAZEingMt (keyCount ?y))
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x)))
+		(localAgent ?sr)
+		(newUniqueTask MazeAct ?task)
+		)
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(evaluate ?z (PlusFn ?y 1))
+				(doUntell (ist-Information aMAZEingMt (keyCount ?y)))
+				(doTell (ist-Information aMAZEingMt (keyCount ?z)))
+				(doUntell (ist-Information aMAZEingMt (hasKey ?x)))
+				(doEnqueue ?sr ?task
+					(mazeAct ?newList))))))
+
+;move to an adjacent mazeBlock, and don't backtrack
+(preconditionForMethod
+	(and	
+		(uninferredSentence (ist-Information aMAZEingMt (solutionReached)))
+		(wmOnly (ist-Information aMAZEingMt (hasAgent ?x)))
+		(wmOnly (ist-Information aMAZEingMt (uninferredSentence (hasKey ?x))))
+		;(ist-Information aMAZEingMt (connected ?x ?y))
+		;(evaluate ?last (LastInListFn ?actList))
+		;(different ?y ?last)
+		(numAnswers 1 (getNextBlock ?x ?y ?actList))
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x)))
+		(localAgent ?sr)
+		(wmOnly (ist-Information aMAZEingMt (evaluate ?agentSet (TheClosedRetrievalSetOf ?agent (hasAgent ?agent)))))
+		(evaluate ?longth (CardinalityFn ?agentSet))
+		(newUniqueTask MazeAct ?task))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(doTell (ist-Information aMAZEingMt (hasAgent ?y)))
+				(doUntell (ist-Information aMAZEingMt (hasAgent ?x)))
+				(doEnqueue ?sr ?task
+					(mazeAct ?newList))))))
+
+(<== (getNextBlock ?curr ?next ?list)
+	(uninferredSentence (ist-Information aMAZEingMt (isDeadEnd ?curr)))
+	(ist-Information aMAZEingMt (connected ?curr ?next))
+	(evaluate ?last (LastInListFn ?list))
+	(different ?last ?next))
+
+(<== (getNextBlock ?curr ?next ?list)
+	(ist-Information aMAZEingMt (isDeadEnd ?curr))
+	(ist-Information aMAZEingMt (connected ?curr ?next)))
+
+;(<== (getNextBlock ?curr ?next ?list)
+;	(evaluate ?len (LengthOfListFn ?list))
+;	(equals ?len 0)
+;	(ist-Information aMAZEingMt (connected ?curr ?next)))
+		
+
+
+
+;move to an adjacent mazeBlock and backtrack because you're in a dead end
+;(preconditionForMethod
+;	(and	
+;		(uninferredSentence (ist-Information aMAZEingMt (solutionReached)))
+;		(wmOnly (ist-Information aMAZEingMt (hasAgent ?x)))
+;		(uninferredSentence (ist-Information aMAZEingMt (hasKey ?x)))
+;		(ist-Information aMAZEingMt (connected ?x ?y))
+;		(ist-Information aMAZEingMt (isDeadEnd ?x))
+;		(evaluate ?newList (JoinListsFn ?actList (TheList ?x)))
+;		(localAgent ?sr)
+;		(newUniqueTask MazeAct ?task))
+;	(methodForAction
+;		(mazeAct ?actList)
+;		(actionSequence
+;			(TheList
+;				(doTell (ist-Information aMAZEingMt (hasAgent ?y)))
+;					(doUntell (ist-Information aMAZEingMt (hasAgent ?x)))
+;				(doEnqueue ?sr ?task
+;					(mazeAct ?newList))))))
+
+
+;this is the same as the no backtrack one, essentially.
+;that one fails if the list is empty since it has no last element to compare with the square you want to move to
+;hence, this one does the same thing but can only be called when the list of visited squares is empty
+(preconditionForMethod
+	(and	
+		(evaluate ?len (LengthOfListFn ?actList))
+		(equals ?len 0)
+		(wmOnly (ist-Information aMAZEingMt (hasAgent ?x)))
+		(ist-Information aMAZEingMt (connected ?x ?y))
+		(evaluate ?newList (JoinListsFn ?actList (TheList ?x)))
+		(localAgent ?sr)
+		(newUniqueTask MazeAct ?task))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(doTell (ist-Information aMAZEingMt (hasAgent ?y)))
+;				(doUntell (ist-Information aMAZEingMt (hasAgent ?x)))
+				(doEnqueue ?sr ?task
+					(mazeAct ?newList))))))
+
+
+;If all goals are satisfied, at end of maze, do nothing
+(preconditionForMethod
+	(ist-Information aMAZEingMt (solutionReached))
+	(methodForAction
+		(mazeAct ?actList)
+		(actionSequence
+			(TheList
+				(doTell (ist-Information aMAZEingMt (finalPath ?actList)))))))
+
+;to start everything, we need something with no preconditions
+(preconditionForMethod
+	(true)
+	(methodForAction
+		(beginRecursion)
+		(actionSequence
+			(TheList
+				(initializeWM)))))
+
+(preconditionForMethod
+	(isStart ?s)
+	(methodForAction
+		(initializeWM)
+		(actionSequence
+			(TheList
+				(doTell (ist-Information aMAZEingMt (hasAgent ?s)))
+				(doTell (ist-Information aMAZEingMt (keyCount 0)))
+				(doPauseAgenda)
+				(mazeAct (TheList))))))
+
+(preconditionForMethod
+	(true)
+	(methodForAction
+		(recurseAgain)
+		(actionSequence
+			(TheList
+				(mazeAct (TheList))))))
